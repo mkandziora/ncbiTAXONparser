@@ -1,4 +1,8 @@
 """
+ncbiTAXONparser: parser for ncbi taxonomy information
+Copyright (C) 2019  Martha Kandziora
+martha.kandziora@yahoo.com
+
 
 Uses ncbi databases to easily retrieve taxonomic information.
 
@@ -8,9 +12,6 @@ parts are altered/copied from https://github.com/zyxue/ncbitax2lin/blob/master/n
 of the methods. Those functions have a MIT license.
 
 All other classes and methods are distributed under the following license.
-
-ncbiTAXONparser: parser for ncbi taxonomy information
-Copyright (C) 2019  M. Kandziora
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -44,10 +45,10 @@ names = None
 
 # extodo: make_lineage_table needs to be rerun, when nodes and names are updated: is now part of db_updater
 
-def strip(str_):
+def strip(str):
     """ Strips of blank characters from string in pd dataframe.
     """
-    return str_.strip()
+    return str.strip()
 
 
 def load_nodes(nodes_file):
@@ -158,7 +159,7 @@ class Parser:
                 extract_ncbi_data()
             else:
                 sys.stderr.write(
-                    "You have no taxonomic database, which is needed to run PhyFilter. Restart and type 'yes'. \n")
+                    "You have no taxonomic database, which is needed to use the ncbiTAXONparser. Restart and type 'yes'. \n")
                 sys.exit(-10)
         else:
             download_date = os.path.getmtime(self.nodes_file)
