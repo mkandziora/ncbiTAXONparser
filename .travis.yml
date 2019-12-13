@@ -1,0 +1,27 @@
+language: python
+python:
+  - "3.5"
+# command to install dependencies
+
+before_install:
+  - sudo apt-get update
+  - pip install numpy
+  - python setup.py install
+
+
+install:
+  # install requirements of physcraper
+  - pip install --quiet -r requirements.txt
+  - pip install --quiet .
+
+
+# command to run tests
+script:
+  - wget 'https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/taxdump.tar.gz'
+  - gunzip  -cd taxdump.tar.gz | (tar xvf - names.dmp nodes.dmp)
+  - mv *.dmp data/
+  - pytest tests/test_*
+
+after_success:
+  - curl -s https://codecov.io/bash | bash
+
