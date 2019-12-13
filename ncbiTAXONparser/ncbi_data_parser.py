@@ -3,7 +3,6 @@ ncbiTAXONparser: parser for ncbi taxonomy information
 Copyright (C) 2019  Martha Kandziora
 martha.kandziora@yahoo.com
 
-
 Uses ncbi databases to easily retrieve taxonomic information.
 
 data is provided by ncbi - downloaded via db_updater
@@ -151,6 +150,7 @@ class Parser:
         If not files will be downloaded.
         """
         print(self.nodes_file)
+        x = 'no'
         if not os.path.isfile(self.names_file):
             print("Do you want to download taxonomy databases from ncbi? Note: This is a US government website! "
                   "You agree to their terms. \n")
@@ -452,11 +452,11 @@ class Parser:
                 tax_id = 0
                 if os.path.exists("ncbi_name_unknown.err"):
                     fn = open("ncbi_name_unknown.err", "a")
-                    fn.write("{}".format(tax_name))
+                    fn.write("{}\n".format(tax_name))
                     fn.close()
                 else:
                     fn = open("ncbi_name_unknown.err", "w")
-                    fn.write("{}".format(tax_name))
+                    fn.write("{}\n".format(tax_name))
                     fn.close()
         return tax_id
 

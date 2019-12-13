@@ -8,7 +8,4 @@ setup(name='ncbiTAXONparser',
       author='Martha Kandziora',
       author_email='martha.kandziora@yahoo.com',
       packages=['ncbiTAXONparser'],
-      install_requires=[
-          'pandas'
-      ]
      )

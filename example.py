@@ -4,6 +4,7 @@ from ncbiTAXONparser import ncbi_data_parser
 ncbi_parser = ncbi_data_parser.Parser(names_file='./data/names.dmp',
                                       nodes_file='./data/nodes.dmp', interactive=False)
 
+
 tax_id = 18794
 taxid_set = [18794, 422320, 422327, 422329, 422331]
 downtorank = 'tribe'
