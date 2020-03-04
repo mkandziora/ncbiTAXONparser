@@ -159,7 +159,8 @@ class Parser:
                 extract_ncbi_data()
             else:
                 sys.stderr.write(
-                    "You have no taxonomic database, which is needed to use the ncbiTAXONparser. Restart and type 'yes'. \n")
+                    "You have no taxonomic database, which is needed to use the ncbiTAXONparser. "
+                    "Restart and type 'yes'. \n")
                 sys.exit(-10)
         else:
             download_date = os.path.getmtime(self.nodes_file)
@@ -203,7 +204,7 @@ class Parser:
         :param taxid_set: set of ncbi taxon ids
         :return: mrca
         """
-        print('get mrca from taxid_set')
+        sys.stdout.write('Get mrca from taxid_set: {}'.format(taxid_set))
         if nodes is None:
             self.initialize()
         id_dict = dict()
@@ -273,11 +274,11 @@ class Parser:
             sys.stderr.write("You try to get downtorank without supplying a rank.")
             return tax_id
         if downtorank == 'no rank':
-            sys.stderr.write("Cannot provide an id of a given taxon id corresponding to 'no rank'.")
+            sys.stderr.write("Cannot provide an ID of a higuer rank if the provided rank is 'no rank'.\n")
             sys.exit(-5)
         id_known = self.taxid_is_valid(tax_id)
         if id_known is False:
-            sys.stderr.write("Taxon id is not known by nodes. Probably to new.\n.")
+            sys.stderr.write("Taxon id is not known by nodes. Probably to new: {}.\n".format(tax_id))
             sys.exit(-6)
 
         if nodes is None:
@@ -296,6 +297,7 @@ class Parser:
         if nodes[nodes["tax_id"] == tax_id]["rank"].values[0] == downtorank:
             return tax_id
         elif nodes[nodes["tax_id"] == tax_id]["rank"].values[0] == "superkingdom":
+            sys.stderr.write("Could not find higher rank for: {}. Set taxid to 0.\n".format(tax_id))
             tax_id = 0
             return tax_id
         else:
@@ -311,11 +313,11 @@ class Parser:
                     mrca_id_set.add(item)
                 else:
                     sys.stderr.write("mrca id {}  is not known by nodes. Probably to new."
-                                     " ID will be removed from mrca set.\n.".format(item))
+                                     " ID will be removed from mrca set.\n".format(item))
         else:
             id_known = self.taxid_is_valid(mrca_id)
             if id_known is False:
-                sys.stderr.write("mrca id {} is not known by nodes. Probably to new.\n.".format(mrca_id))
+                sys.stderr.write("mrca id {} is not known by nodes. Provide a valid mrca.\n".format(mrca_id))
                 sys.exit(-6)
             # do mrca format check
         if type(mrca_id) == set:
@@ -342,7 +344,7 @@ class Parser:
         id_known = self.taxid_is_valid(tax_id)
         if id_known is False:
             sys.stderr.write("Taxon id {} is not known by nodes. Probably to new.\n.".format(tax_id))
-            return -500
+            sys.exit(500)
         if type(tax_id) != int:
             tax_id = int(tax_id)
         self.check_mrca_input(mrca_id)
@@ -426,8 +428,7 @@ class Parser:
                 tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
                 sys.stdout.write("tax_name {} unknown, modified to {} worked.\n".format(org_tax, tax_name))
             else:
-                sys.stdout.write("Are you sure, its an accepted name and not a synonym: {}? "
-                                 "I look in the synonym table now.\n".format(tax_name))
+                sys.stdout.write("Taxon name -- {} -- is a synonym or unknown. Check synonyms now.\n".format(tax_name))
                 tax_id = self.get_id_from_synonym(tax_name)
         tax_id = int(tax_id)
         return tax_id
