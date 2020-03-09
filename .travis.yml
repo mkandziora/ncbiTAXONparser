@@ -10,7 +10,7 @@ before_install:
 
 
 install:
-  # install requirements of physcraper
+  # install requirements
   - pip install --quiet -r requirements.txt
   - pip install --quiet .
 
