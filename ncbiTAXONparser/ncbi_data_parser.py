@@ -204,7 +204,7 @@ class Parser:
         :param taxid_set: set of ncbi taxon ids
         :return: mrca
         """
-        sys.stdout.write('Get mrca from taxid_set: {}'.format(taxid_set))
+        sys.stdout.write('Get mrca from taxon id set: {}'.format(taxid_set))
         if nodes is None:
             self.initialize()
         id_dict = dict()
@@ -274,7 +274,7 @@ class Parser:
             sys.stderr.write("You try to get downtorank without supplying a rank.")
             return tax_id
         if downtorank == 'no rank':
-            sys.stderr.write("Cannot provide an ID of a higuer rank if the provided rank is 'no rank'.\n")
+            sys.stderr.write("Cannot provide an ID of a higher rank if the provided rank is 'no rank'.\n")
             sys.exit(-5)
         id_known = self.taxid_is_valid(tax_id)
         if id_known is False:
@@ -393,7 +393,7 @@ class Parser:
                 tax_name = tax_name.values[0].replace(" ", "_")
                 tax_name = tax_name.strip()
         except IndexError:
-            sys.stdout.write("tax_id {} unknown by ncbi_parser files (names.dmp)\n".format(tax_id))
+            sys.stdout.write("Taxon id {} unknown by ncbi_parser files (names.dmp)\n".format(tax_id))
             tax_name = "unknown_{}".format(tax_id)
             if os.path.exists("ncbi_id_unknown.err"):
                 fn = open("ncbi_id_unknown.err", "a")
@@ -426,7 +426,7 @@ class Parser:
                     tax_name.split(" ")[1],
                     tax_name.split(" ")[2])
                 tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
-                sys.stdout.write("tax_name {} unknown, modified to {} worked.\n".format(org_tax, tax_name))
+                sys.stdout.write("Tax_name {} unknown, modified to {} worked.\n".format(org_tax, tax_name))
             else:
                 sys.stdout.write("Taxon name -- {} -- is a synonym or unknown. Check synonyms now.\n".format(tax_name))
                 tax_id = self.get_id_from_synonym(tax_name)
@@ -449,7 +449,7 @@ class Parser:
                     tax_name.split(" ")[2])
                 tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
             else:
-                sys.stderr.write("ncbi taxon name unknown by parser files: {}, taxid set to 0.\n".format(tax_name))
+                sys.stderr.write("Ncbi taxon name unknown by parser files: {}, taxid set to 0.\n".format(tax_name))
                 tax_id = 0
                 if os.path.exists("ncbi_name_unknown.err"):
                     fn = open("ncbi_name_unknown.err", "a")
