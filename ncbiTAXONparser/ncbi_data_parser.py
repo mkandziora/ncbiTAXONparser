@@ -204,7 +204,7 @@ class Parser:
         :param taxid_set: set of ncbi taxon ids
         :return: mrca
         """
-        sys.stdout.write('Get mrca from taxon id set: {}'.format(taxid_set))
+        sys.stdout.write('Get mrca from taxon id set: {}\n'.format(taxid_set))
         if nodes is None:
             self.initialize()
         id_dict = dict()
