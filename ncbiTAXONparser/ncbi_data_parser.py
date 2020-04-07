@@ -421,12 +421,18 @@ class Parser:
             debug(tax_name)
             debug(names[names["name_txt"] == tax_name])
             if len(tax_name.split(" ")) == 3:
-                tax_name = "{} {}-{}".format(
-                    tax_name.split(" ")[0],
-                    tax_name.split(" ")[1],
-                    tax_name.split(" ")[2])
-                tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
-                sys.stdout.write("Tax_name {} unknown, modified to {} worked.\n".format(org_tax, tax_name))
+                try:
+                    tax_name2 = "{} {}-{}".format(
+                        tax_name.split(" ")[0],
+                        tax_name.split(" ")[1],
+                        tax_name.split(" ")[2])
+                    tax_id = names[names["name_txt"] == tax_name2]["tax_id"].values[0]
+                    sys.stdout.write("Tax_name {} unknown, modified to {} worked.\n".format(org_tax, tax_name2))
+                except IndexError:
+                    print(tax_name)
+                    tax_name = "{}-{} {}".format(tax_name.split(" ")[0], tax_name.split(" ")[1], tax_name.split(" ")[2])
+                    tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
+                    sys.stdout.write("Tax_name {} unknown, modified to {} worked.\n".format(org_tax, tax_name))
             else:
                 sys.stdout.write("Taxon name -- {} -- is a synonym or unknown. Check synonyms now.\n".format(tax_name))
                 tax_id = self.get_id_from_synonym(tax_name)
