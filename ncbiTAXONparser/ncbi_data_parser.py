@@ -132,7 +132,8 @@ def extract_ncbi_data():
 
 
 class Parser:
-    """Reads in databases from ncbi to connect species names with the taxonomic identifier
+    """
+    Reads in databases from ncbi to connect species names with the taxonomic identifier
     and the corresponding hierarchical information. It provides a fast way to get those information.
 
     Nodes includes the hierarchical information, names the scientific names and ID's.
@@ -146,7 +147,8 @@ class Parser:
             self._download_ncbi_parser()
 
     def _download_ncbi_parser(self):
-        """Check if files are present and if they are up to date.
+        """
+        Check if files are present and if they are up to date.
         If not files will be downloaded.
         """
         print(self.nodes_file)
@@ -182,10 +184,10 @@ class Parser:
 
     def initialize(self):
         """
-         The data itself are not stored in __init__. Instead every time the function is loaded
+        The data itself are not stored in __init__. Instead every time the function is loaded
         if it has not yet been run during a run.
 
-        It was important when I used pickle. Might therefore not be needed anymore.
+        Note: It was important when I used pickle. Might therefore not be needed anymore.
         """
         print("Initialize NODES and NAMES!!")
         global nodes
@@ -305,6 +307,12 @@ class Parser:
             return self.get_downtorank_id(parent_id, downtorank)
 
     def check_mrca_input(self, mrca_id):
+        """
+        Will return the mrcd id in the correct format needed.
+
+        :param mrca_id: ncbi taxon id
+        :return: modified taxon id
+        """
         if type(mrca_id) == set:
             mrca_id_set = set()
             for item in mrca_id:
@@ -312,12 +320,12 @@ class Parser:
                 if id_known is True:
                     mrca_id_set.add(item)
                 else:
-                    sys.stderr.write("mrca id {}  is not known by nodes. Probably to new."
+                    sys.stderr.write("mrca id '{}' is not known. Probably to new."
                                      " ID will be removed from mrca set.\n".format(item))
         else:
             id_known = self.taxid_is_valid(mrca_id)
             if id_known is False:
-                sys.stderr.write("mrca id {} is not known by nodes. Provide a valid mrca.\n".format(mrca_id))
+                sys.stderr.write("mrca id '{}' is not known. Provide a valid mrca id.\n".format(mrca_id))
                 sys.exit(-6)
             # do mrca format check
         if type(mrca_id) == set:
@@ -343,7 +351,7 @@ class Parser:
         # do id testing
         id_known = self.taxid_is_valid(tax_id)
         if id_known is False:
-            sys.stderr.write("Taxon id {} is not known by nodes. Probably to new.\n.".format(tax_id))
+            sys.stderr.write("Taxon id '{}' is not known by nodes. Probably to new.\n.".format(tax_id))
             sys.exit(500)
         if type(tax_id) != int:
             tax_id = int(tax_id)
@@ -393,7 +401,7 @@ class Parser:
                 tax_name = tax_name.values[0].replace(" ", "_")
                 tax_name = tax_name.strip()
         except IndexError:
-            sys.stdout.write("Taxon id {} unknown by ncbi_parser files (names.dmp)\n".format(tax_id))
+            sys.stdout.write("Taxon ID '{}' unknown by ncbi_parser files (names.dmp)\n".format(tax_id))
             tax_name = "unknown_{}".format(tax_id)
             if os.path.exists("ncbi_id_unknown.err"):
                 fn = open("ncbi_id_unknown.err", "a")
@@ -427,14 +435,15 @@ class Parser:
                         tax_name.split(" ")[1],
                         tax_name.split(" ")[2])
                     tax_id = names[names["name_txt"] == tax_name2]["tax_id"].values[0]
-                    sys.stdout.write("Tax_name {} unknown, modified to {} worked.\n".format(org_tax, tax_name2))
+                    sys.stdout.write("Tax_name '{}' unknown, modified to {} worked.\n".format(org_tax, tax_name2))
                 except IndexError:
                     print(tax_name)
                     tax_name = "{}-{} {}".format(tax_name.split(" ")[0], tax_name.split(" ")[1], tax_name.split(" ")[2])
                     tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
-                    sys.stdout.write("Tax_name {} unknown, modified to {} worked.\n".format(org_tax, tax_name))
+                    sys.stdout.write("Tax_name '{}' unknown, modified to '{}'.\n".format(org_tax, tax_name))
             else:
-                sys.stdout.write("Taxon name -- {} -- is a synonym or unknown. Check synonyms now.\n".format(tax_name))
+                # sys.stdout.write("Taxon name -- {} -- is a synonym or unknown by ncbi. "
+                #                  "Check synonyms now.\n".format(tax_name))
                 tax_id = self.get_id_from_synonym(tax_name)
         tax_id = int(tax_id)
         return tax_id
@@ -455,7 +464,8 @@ class Parser:
                     tax_name.split(" ")[2])
                 tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
             else:
-                sys.stderr.write("Ncbi taxon name unknown by parser files: {}, taxid set to 0.\n".format(tax_name))
+                sys.stderr.write("Taxon name -- {} -- unknown by ncbi parser files: "
+                                 "taxid set to 0.\n".format(tax_name))
                 tax_id = 0
                 if os.path.exists("ncbi_name_unknown.err"):
                     fn = open("ncbi_name_unknown.err", "a")
@@ -510,7 +520,7 @@ def lineages_to_df(rank, name):
     return subset
 
 
-# copy from ncbitax2lin
+# copy and adapt from ncbitax2lin
 def make_lineage_table():
     """
     Produces the table needed for get_lower_from_id().
