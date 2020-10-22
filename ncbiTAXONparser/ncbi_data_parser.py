@@ -5,10 +5,10 @@ martha.kandziora@yahoo.com
 
 Uses ncbi databases to easily retrieve taxonomic information.
 
-data is provided by ncbi - downloaded via db_updater
+Need data provided by ncbi - downloaded via db_updater.
 
-parts are altered/copied from https://github.com/zyxue/ncbitax2lin/blob/master/ncbitax2lin.py, I indicated those on top
-of the methods. Those functions have a MIT license.
+Parts of the code are altered/copied from https://github.com/zyxue/ncbitax2lin/blob/master/ncbitax2lin.py,
+I indicated those on top of the methods. Those functions have a MIT license.
 
 All other classes and methods are distributed under the following license.
 
@@ -57,8 +57,7 @@ def load_nodes(nodes_file):
     :param nodes_file: relative path to the files 'nodes'
     :return: pandas dataframe with the data
     """
-    # print(nodes_file)
-    assert os.path.exists(nodes_file), ("file `%s` does not exist. Make sure you downloaded the "
+    assert os.path.exists(nodes_file), ("File `%s` does not exist. Make sure you downloaded the "
                                         "databases from ncbi." % nodes_file)
     col_names = ["tax_id",
                  "parent_tax_id",
@@ -89,7 +88,7 @@ def load_names(names_file):
     :param names_file: relative path to the files 'names'
     :return: pandas dataframe with the data
     """
-    assert os.path.exists(names_file), ("file `%s` does not exist. Make sure you downloaded the "
+    assert os.path.exists(names_file), ("File `%s` does not exist. Make sure you downloaded the "
                                         "databases from ncbi." % names_file)
     df = make_clean_df(names_file)
     sci_df = df[df["name_class"] == "scientific name"]
@@ -105,9 +104,8 @@ def load_synonyms(names_file):
     :param names_file: relative path to the files 'names'
     :return: pandas dataframe with the data
     """
-    assert os.path.exists(names_file), ("file `%s` does not exist. Make sure you downloaded "
+    assert os.path.exists(names_file), ("File `%s` does not exist. Make sure you downloaded "
                                         "the databases from ncbi." % names_file)
-    # print("load synonyms")
     df = make_clean_df(names_file)
     sci_df = df[df["name_class"] == "synonym"]
     sci_df.reset_index(drop=True, inplace=True)
@@ -129,6 +127,18 @@ def extract_ncbi_data():
     os.system("mv nodes.dmp ./data/")
     os.system("mv names.dmp ./data/")
     os.system("rm ./data/taxdump.tar.gz")
+
+
+def get_parent_id(tax_id):
+    """
+    Get the parent taxon id of the id provided. The id returned is the id of a taxon one taxonomic hierarchical
+    level up, e.g. genus id from species id.
+
+    :param tax_id:
+    :return:
+    """
+    parent_id = int(nodes[nodes["tax_id"] == tax_id]["parent_tax_id"].values[0])
+    return parent_id
 
 
 class Parser:
@@ -212,19 +222,26 @@ class Parser:
         id_dict = dict()
         for item in taxid_set:
             id_list = list()
-            parent_id = int(nodes[nodes["tax_id"] == item]["parent_tax_id"].values[0])
-            while parent_id != 131567:
+            parent_id = get_parent_id(item)
+            while parent_id != 131567:  # while not cellular organism
                 id_list.append(parent_id)
-                parent_id = int(nodes[nodes["tax_id"] == parent_id]["parent_tax_id"].values[0])
+                parent_id = get_parent_id(parent_id)
             id_dict[item] = id_list
-        count = 0
+
         for taxid in next(iter(id_dict.values())):  # take random entry as comparison
+            count = 0
             for id2 in id_dict:
                 idl = id_dict[id2]
                 if taxid in idl:
                     count += 1
                     if count == len(id_dict.keys()):
-                        return taxid
+                        for tx2 in next(iter(id_dict.values())):
+                            fit_mrca = self.match_id_to_mrca(tx2, taxid)
+                            if fit_mrca == 0:
+                                print('Should not happen!')
+                                self.get_mrca(taxid_set)
+                            else:
+                                return taxid
                 else:
                     continue
 
@@ -288,7 +305,8 @@ class Parser:
         if type(tax_id) != int:
             tax_id = int(tax_id)
         # following statement is to get id of taxa if taxa is higher ranked than specified
-        rank = nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
+        rank = self.get_rank(tax_id)
+
         # next one is used to return id if rank of taxid was always higher than species
         # todo: should be working with any kind rank
         if rank != "species":
@@ -303,7 +321,7 @@ class Parser:
             tax_id = 0
             return tax_id
         else:
-            parent_id = int(nodes[nodes["tax_id"] == tax_id]["parent_tax_id"].values[0])
+            parent_id = get_parent_id(tax_id)
             return self.get_downtorank_id(parent_id, downtorank)
 
     def check_mrca_input(self, mrca_id):
@@ -362,8 +380,8 @@ class Parser:
             debug("artifical")
             tax_id = 0
             return tax_id
+        rank_tax = self.get_rank(tax_id)
 
-        rank_tax = nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
         if tax_id == mrca_id:
             debug("found right rank")
             return tax_id
@@ -376,7 +394,7 @@ class Parser:
             return tax_id
         else:
             debug("parent")
-            parent_id = int(nodes[nodes["tax_id"] == tax_id]["parent_tax_id"].values[0])
+            parent_id = get_parent_id(tax_id)
             debug(parent_id)
             return self.match_id_to_mrca(parent_id, mrca_id)
 
@@ -456,6 +474,9 @@ class Parser:
         tax_name = tax_name.replace("_", " ")
         try:
             tax_id = synonyms[synonyms["name_txt"] == tax_name]["tax_id"].values[0]
+            accepted_name = self.get_name_from_id(tax_id)
+            sys.stdout.write("Taxon name '{}' is a synonym, accepted name is {}. "
+                             "Changed accordingly.\n".format(tax_name, accepted_name))
         except IndexError:
             if len(tax_name.split(" ")) == 3:
                 tax_name = "{} {}-{}".format(
@@ -463,6 +484,10 @@ class Parser:
                     tax_name.split(" ")[1],
                     tax_name.split(" ")[2])
                 tax_id = names[names["name_txt"] == tax_name]["tax_id"].values[0]
+                accepted_name = self.get_name_from_id(tax_id)
+                sys.stdout.write(
+                    "Taxon name '{}' is a synonym, the accepted name is {}. "
+                    "Changed accordingly.\n".format(tax_name, accepted_name))
             else:
                 sys.stderr.write("Taxon name -- {} -- unknown by ncbi parser files: "
                                  "taxid set to 0.\n".format(tax_name))
@@ -488,17 +513,111 @@ class Parser:
         if names is None:
             self.initialize()
         rank_list = ['tax_id', 'superkingdom', 'phylum', 'class', 'order', 'family', 'tribe', 'genus', 'species']
-        rank_mrca = nodes[nodes["tax_id"] == tax_id]["rank"].values[0]
+        rank_mrca = self.get_rank(tax_id)
+
         spn = self.get_name_from_id(tax_id)
         if rank_mrca in rank_list:  # corresponds to what is written into the lineage files.
             df = lineages_to_df(rank_mrca, spn)
         else:
             while rank_mrca not in rank_list:
-                parent_id = int(nodes[nodes["tax_id"] == tax_id]["parent_tax_id"].values[0])
+                parent_id = get_parent_id(tax_id)
                 rank_mrca = nodes[nodes["tax_id"] == parent_id]["rank"].values[0]
                 if rank_mrca in rank_list:
                     df = lineages_to_df(rank_mrca, spn)
         return df['tax_id'].to_list()
+
+    def get_higher_from_id(self, tax_id, rank):
+        """
+        Find all higher taxon ids for given id until it meets the rank.
+
+        Takes ages, as it loops through almost all ids provided by ncbi.
+        :param rank:
+        :param tax_id:
+        :return:
+        """
+        debug('get_higher_from_id')
+        if names is None:
+            self.initialize()
+        rank_taxid = self.get_rank(tax_id)
+        spn = self.get_name_from_id(tax_id)
+        # lineage = [tax_id, spn, rank_taxid]
+        names_l = [spn]
+        rank_ids = [rank_taxid]
+        print(rank)
+        print(rank_taxid)
+
+        while rank_taxid != rank:
+            parent_id = get_parent_id(tax_id)
+            parent_name = self.get_name_from_id(parent_id)
+            rank_parent = self.get_rank(parent_id)
+            # lineage.append((tax_id, parent_name, rank_parent))
+            names_l.append(parent_name)
+            rank_ids.append(rank_parent)
+            tax_id = parent_id
+            rank_taxid = rank_parent
+            print(rank_taxid)
+            print(parent_name)
+            if tax_id == 131567:
+                break
+        print('make df2')
+        df = {}
+        df2 = pd.DataFrame(columns=rank_ids)
+        for i in range(len(rank_ids)):
+            df[rank_ids[i]] = names_l[i]
+        df2 = df2.append(df, ignore_index=True)
+        return df2
+
+    def make_rank_table(self, aln_taxids, workdir, mrca=None):
+        """
+        Generate table with higher rank names for all taxids in entry.
+
+        """
+        debug('make_rank_table')
+        if mrca is None:
+            mrca = [self.get_mrca(taxid_set=aln_taxids)][0]
+            print(mrca)
+
+        mrca_rank = self.get_rank(mrca)
+        all_dfs = pd.DataFrame()
+        for taxid in aln_taxids:
+            df = self.get_higher_from_id(taxid, mrca_rank)
+            print(df)
+            if df.columns.duplicated().any():
+                df = df.rename(columns=renamer())
+
+                # cols = pd.Series(df.columns)
+                #
+                # for dup in cols[cols.duplicated()].unique():
+                #     cols[cols[cols == dup].index.values.tolist()] = [dup + '.' + str(i) if i != 0 else dup for i in
+                #                                                      range(sum(cols == dup))]
+                #
+                # # rename the columns with the cols list.
+                # df.columns = cols
+                #
+                # df
+                print(df.columns)
+
+            all_dfs = all_dfs.append(df, sort=False)
+        all_dfs.to_csv(os.path.join(workdir, 'lineage.csv'), index=False, columns=all_dfs.columns)
+
+
+class renamer():
+    def __init__(self):
+        self.d = dict()
+
+    def __call__(self, x):
+        # print('x')
+        # print(x)
+        if x not in self.d:
+            self.d[x] = 0
+            return x
+        else:
+            # print('Esle')
+            # print( self.d[x])
+            self.d[x] += 1
+            # print("%s_%d" % (x, self.d[x]))
+            # print(self.d[x])
+            return "%s_%d" % (x, self.d[x])
 
 
 def lineages_to_df(rank, name):
@@ -513,7 +632,7 @@ def lineages_to_df(rank, name):
     if rank == 'no rank':
         sys.stderr.write("Cannot provide an id of a given taxon id corresponding to 'no rank'.")
         sys.exit(-5)
-    if not os.path.exists(os.path.join('./data/lineages_cols.csv')):
+    if not os.path.exists(os.path.join('./data/{}_lineages_cols.csv'.format(rank))):
         make_lineage_table()
     lin = pd.read_csv(os.path.join('./data/lineages_cols.csv'))
     subset = lin[lin[rank] == name]
