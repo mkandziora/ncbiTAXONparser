@@ -17,13 +17,13 @@ run from within the main folder:
 
 #### Translate ncbi names and IDs:
 
-There is an example files in the main folder. Edit them for your purpose or use those function in your own workflows.
-See the PhylUp package for an example on how to use it.    
+There is an `example.py` files in the main folder, which can easily be adapted for other purposes.
+See the [PhylUp](https://github.com/mkandziora/PhylUp.git) package for an example on how to use it.    
 
 
-### If you want to run some tests
-
-run:
+### Make sure it runs
+To check if the installation was successful and to initialize the download  of the taxonomy files from ncbi,
+ a US government website, please run:
 
  `python3 ./tests/tests_setup.py`  # this will download the taxonomy files from ncbi, a US government website.
  
