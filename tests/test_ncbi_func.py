@@ -22,4 +22,4 @@ def test_get_mrca():
                                           nodes_file='./data/nodes.dmp', interactive=False)
 
     mrca = ncbi_parser.get_mrca(tax_set)
-    assert mrca == 4210
+    assert mrca == 4209
