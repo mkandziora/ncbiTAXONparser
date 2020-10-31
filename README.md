@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/blubbundbla/ncbiTAXONparser.svg?token=tcUKPEqrpyvHbPasst5i&branch=master)](https://travis-ci.com/blubbundbla/ncbiTAXONparser)
+[![Build Status](https://travis-ci.com/mkandziora/ncbiTAXONparser.svg?token=tcUKPEqrpyvHbPasst5i&branch=master)](https://travis-ci.com/mkandziora/ncbiTAXONparser)
 
     
 # ncbiTAXONparser

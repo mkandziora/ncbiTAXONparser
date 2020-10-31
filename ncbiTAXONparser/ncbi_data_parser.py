@@ -1,11 +1,11 @@
 """
 ncbiTAXONparser: parser for ncbi taxonomy information
 Copyright (C) 2019  Martha Kandziora
-martha.kandziora@yahoo.com
+martha.kandziora@mailbox.org
 
 Uses ncbi databases to easily retrieve taxonomic information.
 
-Need data provided by ncbi - downloaded via db_updater.
+Needs data provided by ncbi - downloaded via db_updater.
 
 Parts of the code are altered/copied from https://github.com/zyxue/ncbitax2lin/blob/master/ncbitax2lin.py,
 I indicated those on top of the methods. Those functions have a MIT license.
@@ -379,19 +379,19 @@ class Parser:
         if tax_id in [81077, 28384, 131567, 1, 0]:  # other sequences/artificial sequences
             debug("artifical")
             tax_id = 0
-            return tax_id
+            return False
         rank_tax = self.get_rank(tax_id)
 
         if tax_id == mrca_id:
             debug("found right rank")
-            return tax_id
+            return True
         elif type(mrca_id) == set and tax_id in mrca_id:
             debug("found right rank")
-            return tax_id
+            return True
         elif rank_tax == "superkingdom":
             debug("superkingdom")
             tax_id = 0
-            return tax_id
+            return False
         else:
             debug("parent")
             parent_id = get_parent_id(tax_id)
@@ -632,9 +632,9 @@ def lineages_to_df(rank, name):
     if rank == 'no rank':
         sys.stderr.write("Cannot provide an id of a given taxon id corresponding to 'no rank'.")
         sys.exit(-5)
-    if not os.path.exists(os.path.join('./data/{}_lineages_cols.csv'.format(rank))):
+    if not os.path.exists(os.path.join('./data/{}_{}_lineages_cols.csv'.format(rank, name))):
         make_lineage_table()
-    lin = pd.read_csv(os.path.join('./data/lineages_cols.csv'))
+    lin = pd.read_csv(os.path.join('./data/{}_{}_lineages_cols.csv'.format(rank, name)))
     subset = lin[lin[rank] == name]
     return subset
 
@@ -678,7 +678,7 @@ def make_lineage_table():
             'tribe',
             'genus',
             'species']
-    lineages_df.to_csv(os.path.join('./data/lineages_cols.csv'), index=False, columns=cols)
+    lineages_df.to_csv(os.path.join('./data/{}_{}_lineages_cols.csv'.format(rank, name)), index=False, columns=cols)
 
     # zipping does not work, byte issue
     # util.backup_file(lineages_csv_output)
