@@ -543,8 +543,7 @@ class Parser:
         # lineage = [tax_id, spn, rank_taxid]
         names_l = [spn]
         rank_ids = [rank_taxid]
-        print(rank)
-        print(rank_taxid)
+        # if rank_lookup != None:
 
         while rank_taxid != rank:
             parent_id = get_parent_id(tax_id)
@@ -555,11 +554,9 @@ class Parser:
             rank_ids.append(rank_parent)
             tax_id = parent_id
             rank_taxid = rank_parent
-            print(rank_taxid)
-            print(parent_name)
             if tax_id == 131567:
                 break
-        print('make df2')
+
         df = {}
         df2 = pd.DataFrame(columns=rank_ids)
         for i in range(len(rank_ids)):
@@ -581,7 +578,7 @@ class Parser:
         all_dfs = pd.DataFrame()
         for taxid in aln_taxids:
             df = self.get_higher_from_id(taxid, mrca_rank)
-            print(df)
+            #print(df)
             if df.columns.duplicated().any():
                 df = df.rename(columns=renamer())
 
@@ -595,7 +592,7 @@ class Parser:
                 # df.columns = cols
                 #
                 # df
-                print(df.columns)
+                # print(df.columns)
 
             all_dfs = all_dfs.append(df, sort=False)
         all_dfs.to_csv(os.path.join(workdir, 'lineage.csv'), index=False, columns=all_dfs.columns)

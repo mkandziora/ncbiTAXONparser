@@ -18,6 +18,10 @@ print('Get corresponding rank of taxonid {}'.format(tax_id))
 rank = ncbi_parser.get_rank(tax_id)
 print(rank)
 
+print('get higher from taxid and rank')
+df2 = ncbi_parser.get_higher_from_id(tax_id, 'tribe')
+print(df2)
+
 print('get mrca of {}'.format(taxid_set))
 mrca = ncbi_parser.get_mrca(taxid_set)
 print(mrca)
@@ -42,11 +46,10 @@ print('Get taxon id from scientific name {}'.format(spn))
 id = ncbi_parser.get_id_from_name(spn)
 print(id)
 
-
 print('Get taxon id from synonym name {}'.format(synonym))
 id_synonym = ncbi_parser.get_id_from_synonym(synonym)
 print(id_synonym)
 
-print('Get all taxon ids that are part of a higher id {}'.format(tax_id))
+print('Get all taxon ids that are part of a higher ranked id {}'.format(tax_id))
 ids = ncbi_parser.get_lower_from_id(tax_id)
 print(ids)
